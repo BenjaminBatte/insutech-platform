@@ -1,0 +1,17 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Build outputs
+target/
+build/
+out/
+*.log
+
+# Node
+frontend/node_modules/
+
+# System
+.DS_Store
+Thumbs.db

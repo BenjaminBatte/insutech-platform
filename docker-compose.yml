@@ -1,0 +1,53 @@
+﻿version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: insutech-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 2020
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    container_name: insutech-redis
+    ports:
+      - "6379:6379"
+
+  user-service:
+    build: ./user
+    container_name: user-service
+    ports:
+      - "9090:9090"
+    depends_on:
+      - postgres
+
+  policy-service:
+    build: ./Insu-Tech-backend
+    container_name: policy-service
+    ports:
+      - "9899:9899"
+    depends_on:
+      - postgres
+      - redis
+
+  managed-policy-service:
+    build: ./policy-management-service
+    container_name: managed-policy-service
+    ports:
+      - "9092:9092"
+    depends_on:
+      - postgres
+
+  api-gateway:
+    build: ./insutech-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - user-service
+      - policy-service
+      - managed-policy-service

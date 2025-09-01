@@ -1,0 +1,34 @@
+server:
+  port: 9899
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: 2020
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  cache:
+    type: redis
+    data:
+      redis:
+        host: localhost
+        port: 6379
+        timeout: 60000
+
+logging:
+  level:
+    org.springframework.cache: TRACE
+    com.insurance.policy.insutech.service: DEBUG
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true

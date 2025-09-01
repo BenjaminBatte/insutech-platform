@@ -1,0 +1,28 @@
+
+server:
+  port: 8181
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: http://localhost:9090
+          predicates:
+            - Path=/api/users/**
+        - id: policy-service
+          uri: http://localhost:9899
+          predicates:
+            - Path=/api/v1/policies/**
+        - id: managed-policy-service
+          uri: http://localhost:9092
+          predicates:
+            - Path=/api/managed-policies/**
+  api-gateway:
+   build: ./gateway
+  ports:
+    - "8080:8080"
+  depends_on:
+    - user-service
+    - policy-service
+    - managed-policy-service
