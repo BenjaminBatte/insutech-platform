@@ -1,6 +1,4 @@
-﻿version: "3.9"
-
-services:
+﻿services:
   postgres:
     image: postgres:15
     container_name: insutech-postgres
@@ -21,7 +19,7 @@ services:
     build: ./user-service
     container_name: user-service
     ports:
-      - "9090:9090"
+      - "9899:9899"   # fixed
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
@@ -31,7 +29,7 @@ services:
     build: ./policy-service
     container_name: policy-service
     ports:
-      - "9899:9899"
+      - "9090:9090"   # fixed
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
