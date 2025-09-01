@@ -18,6 +18,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
     password: 2020
+    driver-class-name: org.postgresql.Driver
 
   cache:
     type: caffeine
@@ -37,20 +38,26 @@ spring:
     url: jdbc:postgresql://postgres:5432/postgres
     username: postgres
     password: 2020
+    driver-class-name: org.postgresql.Driver
 
   cache:
     type: redis
-    data:
-      redis:
-        host: redis
-        port: 6379
-        timeout: 60000
+
+  data:
+    redis:
+      host: redis
+      port: 6379
+      timeout: 60000
+      connect-timeout: 2000
 
 ---
 # =====================
 # Common Settings (applies to both profiles)
 # =====================
 spring:
+  application:
+    name: managed-policy-service
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -60,11 +67,14 @@ spring:
 logging:
   level:
     org.springframework.cache: TRACE
-    com.insurance.policy.insutech.service: DEBUG
+    com.insurance.managedpolicy.insutech.service: DEBUG
 
 springdoc:
   api-docs:
     path: /api-docs   # OpenAPI JSON
+    enabled: true
   swagger-ui:
     path: /swagger-ui.html   # Swagger UI
     enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha

@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: local   # default profile when you run locally
+    active: local
 
 ---
 # =====================
@@ -18,14 +18,30 @@ spring:
     url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
     password: 2020
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 1800000
 
   cache:
-    type: redis
-    data:
-      redis:
-        host: localhost
-        port: 6379
-        timeout: 60000
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=30m
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          lob:
+            non_contextual_creation: true
 
 ---
 # =====================
@@ -40,34 +56,103 @@ spring:
     url: jdbc:postgresql://postgres:5432/postgres
     username: postgres
     password: 2020
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 1800000
 
   cache:
     type: redis
-    data:
-      redis:
-        host: redis
-        port: 6379
-        timeout: 60000
 
----
-# =====================
-# Common Settings (both profiles)
-# =====================
-spring:
+  data:
+    redis:
+      host: redis
+      port: 6379
+      timeout: 60000
+      connect-timeout: 2000
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
 
+---
+# =====================
+# Common Settings
+# =====================
+spring:
+  application:
+    name: user-service
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: always
+
 logging:
   level:
+    root: INFO
+    org.springframework: INFO
+    org.hibernate: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type: TRACE
     org.springframework.cache: TRACE
-    com.insurance.policy.insutech.service: DEBUG
+    com.insutech.user: DEBUG
+    com.insutech.user.service: DEBUG
+    com.insutech.user.repository: DEBUG
+
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
 
 springdoc:
   api-docs:
     path: /api-docs
+    enabled: true
   swagger-ui:
     path: /swagger-ui.html
     enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+cors:
+  allowed-origins: http://localhost:3000
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+  allowed-headers: "*"
+  allow-credentials: true
+
+---
+# =====================
+# Test Profile
+# =====================
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  cache:
+    type: simple

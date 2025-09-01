@@ -1,4 +1,6 @@
-﻿services:
+﻿version: '3.8'
+
+services:
   postgres:
     image: postgres:15
     container_name: insutech-postgres
@@ -7,61 +9,93 @@
       POSTGRES_PASSWORD: 2020
       POSTGRES_DB: postgres
     ports:
-      - "5432:5432"
+      - "5432:5432"   # expose for local dev (optional, remove if only needed inside Docker)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7
     container_name: insutech-redis
     ports:
-      - "6379:6379"
+      - "6379:6379"   # expose for local dev (optional, remove if only needed inside Docker)
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   user-service:
-    build: ./user-service
+    build: 
+      context: ./user-service
+      dockerfile: Dockerfile
     container_name: user-service
-    ports:
-      - "9899:9899"   
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   policy-service:
-    build: ./policy-service
+    build: 
+      context: ./policy-service
+      dockerfile: Dockerfile
     container_name: policy-service
-    ports:
-      - "9090:9090"   
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   managed-policy-service:
-    build: ./managed-policy-service
+    build: 
+      context: ./managed-policy-service
+      dockerfile: Dockerfile
+      args:
+        MAVEN_OPTS: "-Dmaven.wagon.http.retryHandler.count=3 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25"
     container_name: managed-policy-service
-    ports:
-      - "9092:9092"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   api-gateway:
-    build: ./insutech-gateway
+    build: 
+      context: ./insutech-gateway
+      dockerfile: Dockerfile
     container_name: api-gateway
     ports:
       - "8181:8181"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
-      - user-service
-      - policy-service
-      - managed-policy-service
+      user-service:
+        condition: service_started
+      policy-service:
+        condition: service_started
+      managed-policy-service:
+        condition: service_started
+      redis:
+        condition: service_healthy
 
   frontend:
     build: ./frontend
     container_name: insutech-frontend
     ports:
-      - "3000:80"  
+      - "3000:80"
     depends_on:
-      - api-gateway
+      api-gateway:
+        condition: service_started
+
+volumes:
+  postgres_data:
+  redis_data:
