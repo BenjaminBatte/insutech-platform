@@ -2,16 +2,22 @@ server:
   port: 9899
 
 spring:
+  profiles:
+    active: local   # default profile when you run locally
+
+---
+# =====================
+# Local Development
+# =====================
+spring:
+  config:
+    activate:
+      on-profile: local
+
   datasource:
     url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
     password: 2020
-
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: update
-    show-sql: true
 
   cache:
     type: redis
@@ -20,6 +26,39 @@ spring:
         host: localhost
         port: 6379
         timeout: 60000
+
+---
+# =====================
+# Docker / Compose
+# =====================
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/postgres
+    username: postgres
+    password: 2020
+
+  cache:
+    type: redis
+    data:
+      redis:
+        host: redis
+        port: 6379
+        timeout: 60000
+
+---
+# =====================
+# Common Settings (both profiles)
+# =====================
+spring:
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 
 logging:
   level:

@@ -18,27 +18,33 @@ services:
       - "6379:6379"
 
   user-service:
-    build: ./user
+    build: ./user-service
     container_name: user-service
     ports:
       - "9090:9090"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - postgres
 
   policy-service:
-    build: ./Insu-Tech-backend
+    build: ./policy-service
     container_name: policy-service
     ports:
       - "9899:9899"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - postgres
       - redis
 
   managed-policy-service:
-    build: ./policy-management-service
+    build: ./managed-policy-service
     container_name: managed-policy-service
     ports:
       - "9092:9092"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - postgres
 
@@ -46,7 +52,9 @@ services:
     build: ./insutech-gateway
     container_name: api-gateway
     ports:
-      - "8080:8080"
+      - "8181:8181"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       - user-service
       - policy-service
