@@ -19,7 +19,7 @@
     build: ./user-service
     container_name: user-service
     ports:
-      - "9899:9899"   # fixed
+      - "9899:9899"   
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
@@ -29,7 +29,7 @@
     build: ./policy-service
     container_name: policy-service
     ports:
-      - "9090:9090"   # fixed
+      - "9090:9090"   
     environment:
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
@@ -57,3 +57,11 @@
       - user-service
       - policy-service
       - managed-policy-service
+
+  frontend:
+    build: ./frontend
+    container_name: insutech-frontend
+    ports:
+      - "3000:80"  
+    depends_on:
+      - api-gateway
